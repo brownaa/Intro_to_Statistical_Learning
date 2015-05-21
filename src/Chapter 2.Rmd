@@ -1,0 +1,223 @@
+---
+title: "Chapter 2"
+author: "Aaron Brown"
+date: "Monday, May 18, 2015"
+output:
+  html_document:
+    number_sections: yes
+    theme: united
+    toc: yes
+  pdf_document:
+    highlight: tango
+    number_sections: yes
+    toc: yes
+---
+
+#Introduction
+
+In this document, I write up all of my solutions for Chapter 2 of the book *An Introduction to Statistical Learning*.
+
+##Project Setup
+
+Each R markdown file follows the same basic setup to ensure all R markdown analyses can be performed independently or sequentially if you are downloading this from Github.
+
+The Github repository has all of the packages archived using the package *packrat*.  If you are running this as a standalong script, be aware of the file structure embedded into the script.  Also you will need to initialize *packrat* by typing:
+
+    source("packrat/init.R")
+    
+This project is loaded by executing the following codechunk.  
+
+```{r}
+library(knitr)
+opts_knit$set(root.dir = '..')
+```
+
+#Solutions
+
+**Question 1**
+
+*Part A*
+
+  Better.  We would expect a flexible model to perform well with a very large sample size and a small number of predictors.
+
+*Part B*
+
+  Worse.  A flexible approach would overfit the data the predictors with a small sample size
+
+*Part C*
+
+  Better.  A more flexible model would provide a better fit for a highly non-linear relationship between predictors and response variables.
+
+*Part D*
+
+  Worse.  Flexible models will fit the model and the excessive variability due to high variance in the error terms.
+    
+**Question 2**
+
+*Part A*
+
+  Regression.  We are most interested in inference.  We assume this since it does not say or provide indication that we would like to predict CEO pay based on these other factors.
+
+  n - 500 firms
+  
+  p - profit, number of employees, industry
+
+*Part B*
+
+  Classification.  In this case we have data on similar products but the underlying question gives a binary result.  We are most interested in inference in this case.
+  
+  n - 20 similar products
+  
+  p - success/failure, product price, marketing budget, competition price, etc.
+
+*Part C*
+
+  Regression.  As stated in the problem, we are interesting in predicting the $ change in US dollar.
+  
+  n - 52
+  
+  p - % change in dollar, US market, British market, and German Market.
+    
+**Question 3**
+
+<<not answered>>
+
+**Question 4**
+
+<<not answered>>
+
+**Question 5**
+
+  A very flexible approach generally will minimize the training error in most cases.  However, this may result in an overfit of the flexible approach to the test data.  This overfit results in a greater error in the test set.  However, a highly non-linear relationship will not result in a good fit if we use a very inflexible model.
+    
+  A more flexible approach might be preferred if we are interested in inference and less interested in the interpretability of the model.
+
+  A less flexible approach may be preferred if we are interested in inference or interpretability of the model.
+    
+**Question 6**
+
+  A parametric approach reduces the problem to estimating a series of parameters and fitting the data to some structured format of the function.  On the other hand, non-parametric approachs are not bound by a static form to fit a function.
+
+  A parametric approach to regression increases the potential for model interpretability.  For both, classification and regression, a parametric approach can more easily be used when the size of the dataset is limited.  
+
+  A non-parametric model's main disadvantages are that a large number of observations are needed to make predictions and that the flexibility of the non-parametric methods can lead to an overfit of the model the the observed data so that it does not represent that functional form or the response to the predictor variables.
+  
+**Question 7**
+
+<<not answered>>
+
+**Question 8**
+
+This problem requires the College data set.  It can be downloaded from the book website with the following code.
+
+```{r}
+require(downloader)
+if(!file.exists("./data/College.csv")){
+      url <- "http://www-bcf.usc.edu/~gareth/ISL/College.csv"
+      download(url, dest = "data/College.csv", mode = "wb")
+}
+```
+
+*Part A*
+
+```{r}
+college <- read.csv("data/College.csv")
+```
+
+*Part B*
+
+In order to use the fix() function as the problem statement suggests, you need to type it into the command line.  Assigning the rownames is done in the following codechunk.
+
+```{r}
+rownames(college) <- college[,1]
+```
+
+Delete the first column by running the following code
+
+```{r}
+college <- college [, -1]
+```
+
+*Part C*
+
+```{r}
+summary(college)
+pairs(~Private+Apps+Accept+Enroll+Top10perc+Top25perc+F.Undergrad+P.Undergrad+Outstate+Room.Board, 
+      data = college)
+boxplot(Outstate~Private, data = college)
+
+Elite <- rep("No", nrow(college))
+Elite[college$Top10perc > 50] <- "Yes"
+Elite <- as.factor(Elite)
+college <- data.frame(college, Elite)
+summary(Elite)
+boxplot(Outstate~Elite, data = college)
+
+par(mfrow=c(2,2))
+hist(college$Apps)
+hist(college$Apps, breaks = 20)
+hist(college$Top10perc)
+hist(college$Top10perc, breaks = 20)
+```
+
+**Question 9**
+
+```{r}
+if(!file.exists("./data/Auto.data")){
+      url <- "http://www-bcf.usc.edu/~gareth/ISL/Auto.data"
+      download(url, dest = "data/Auto.data", mode = "wb")
+}
+auto <- read.table("data/Auto.data", header = TRUE)
+
+auto$horsepower <- as.numeric(levels(auto$horsepower)[auto$horsepower])
+auto <- auto[complete.cases(auto),]
+```
+
+*Part A*
+
+There are 7 variables that are quantitative
+
+ - mpg
+ - cylinders
+ - displacement
+ - horsepower
+ - weight
+ - acceleration
+ - year
+
+There are 2 variables that are qualitative
+
+ - origin
+ - name
+ 
+*Part B*
+
+```{r}
+rslt <- apply(auto[,1:7], 2, range)
+row.names(rslt) <- c('min', 'max')
+print(rslt)
+```
+
+*Part C*
+
+The mean and standard deviation are added to the 'rslt'.
+
+```{r}
+mean <- apply(auto[,1:7], 2, mean)
+sd <- apply(auto[,1:7], 2, sd)
+rslt <- rbind(rslt, mean, sd)
+print(rslt)
+```
+
+*Part D*
+
+```{r}
+auto2 <- auto[-c(10:85),]
+
+rslt <- apply(auto2[,1:7], 2, range)
+row.names(rslt) <- c('min', 'max')
+mean <- apply(auto2[,1:7], 2, mean)
+sd <- apply(auto2[,1:7], 2, sd)
+rslt <- rbind(rslt, mean, sd)
+print(rslt)
+```
